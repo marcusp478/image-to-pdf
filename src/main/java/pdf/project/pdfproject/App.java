@@ -1,8 +1,12 @@
 package pdf.project.pdfproject;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
@@ -17,37 +21,52 @@ public class App extends Application
     public void start(Stage stage)
     {
         stage.setTitle("Image to PDF");
-        FileController fileController = new FileController(stage);
         DirectoryChooser dc = new DirectoryChooser();
 
         VBox layout = new VBox(5);
+
         Button addFilesButton = new Button("Add Files");
         Button convertButton = new Button("Convert Images to PDF");
         Button mergePDFButton = new Button("Merge PDF Files");
         Button chooseDirectoryButton = new Button("Choose Directory");
         Button clearImagesButton = new Button("Remove Image Files");
         Button clearPDFButton = new Button("Remove PDF Files");
+        ListView<Path> imgListView = new ListView<Path>();
 
-        addFilesButton.setOnAction(e -> { fileController.addToImageFileList(); });
+        FileController fc = new FileController(stage, imgListView);
 
-        chooseDirectoryButton.setOnAction(e -> { fileController.setTargetDirectory(dc); });
+        imgListView.setCellFactory(param -> new ImageCell(fc));
 
-        convertButton.setOnAction(e -> { fileController.convertImagesToPDF(); });
+        addFilesButton.setOnAction(e -> { fc.addToImageFileList(imgListView); });
 
-        mergePDFButton.setOnAction(e -> { fileController.mergePDF(); });
+        chooseDirectoryButton.setOnAction(e -> { fc.setTargetDirectory(dc); });
 
-        clearImagesButton.setOnAction(e -> { fileController.getImgFilePathsQueue().clear(); });
+        convertButton.setOnAction(e -> { fc.convertImagesToPDF(); });
 
-        clearPDFButton.setOnAction(e -> { fileController.getFilesToMergeQueue().clear(); });
+        mergePDFButton.setOnAction(e -> { fc.mergePDF(); });
+
+        clearImagesButton.setOnAction(e -> { 
+            ArrayList<Path> imgFilePaths = fc.getImgFilePathsList();
+            imgFilePaths.clear(); 
+            imgListView.getItems().clear();
+        });
+
+        clearPDFButton.setOnAction(e -> { fc.getFilesToMergeList().clear(); });
 
         HBox row = new HBox(5);
-        row.getChildren().add(addFilesButton);
-        row.getChildren().add(chooseDirectoryButton);
-        row.getChildren().add(clearImagesButton);
-        row.getChildren().add(clearPDFButton);
-        row.getChildren().add(convertButton);
-        row.getChildren().add(mergePDFButton);
-        layout.getChildren().add(row);
+        row.getChildren().addAll(
+            addFilesButton,
+            chooseDirectoryButton,
+            clearImagesButton,
+            clearPDFButton,
+            convertButton,
+            mergePDFButton
+        );
+
+        HBox row2 = new HBox(5);
+        row2.getChildren().addAll(imgListView);
+
+        layout.getChildren().addAll(row, row2);
 
         // Create scene
         scene = new Scene(layout, 640, 480);
@@ -55,9 +74,6 @@ public class App extends Application
         stage.show();
     }
 
-    public static void main(String[] args) 
-    {
-        launch();
-    }
+    public static void main(String[] args) { launch(); }
 
 }
