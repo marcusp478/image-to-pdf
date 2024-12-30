@@ -29,14 +29,18 @@ public class FileController
     private Stage primaryStage;
     private String targetDirectory;
     private ListView<Path> imgListView;
+    private ListView<Path> mergeFilesListView;
 
-    public FileController(Stage primaryStage, ListView<Path> imgListView) 
+    public FileController(Stage primaryStage, 
+                          ListView<Path> imgListView,
+                          ListView<Path> mergeFilesListView) 
     {
         imgFilePaths = new ArrayList<Path>();
         filesToMerge = new ArrayList<String>();
         targetDirectory = null;
         this.primaryStage = primaryStage;
         this.imgListView = imgListView;
+        this.mergeFilesListView = mergeFilesListView;
     }
 
     public ArrayList<Path> getImgFilePathsList() { return this.imgFilePaths; }
@@ -135,6 +139,7 @@ public class FileController
 
                 // Have a list of PDFs that the user can choose to merge
                 filesToMerge.add(outputName);
+                mergeFilesListView.getItems().add(Paths.get(outputName));
 
                 imgFilePaths.remove(0);
                 imgListView.getItems().remove(path);
@@ -168,6 +173,7 @@ public class FileController
                 merger.appendDocument(dest, src);
 
                 filesToMerge.remove(0);
+                mergeFilesListView.getItems().remove(Paths.get(curr));
             }
 
             // New file location + file name

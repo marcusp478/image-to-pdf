@@ -1,7 +1,6 @@
 package pdf.project.pdfproject;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -31,11 +30,16 @@ public class App extends Application
         Button chooseDirectoryButton = new Button("Choose Directory");
         Button clearImagesButton = new Button("Remove Image Files");
         Button clearPDFButton = new Button("Remove PDF Files");
+
         ListView<Path> imgListView = new ListView<Path>();
+        imgListView.setPrefWidth(450);
+        ListView<Path> mergeFilesListView = new ListView<Path>();
+        mergeFilesListView.setPrefWidth(450);
 
-        FileController fc = new FileController(stage, imgListView);
+        FileController fc = new FileController(stage, imgListView, mergeFilesListView);
 
-        imgListView.setCellFactory(param -> new ImageCell(fc));
+        imgListView.setCellFactory(param -> new FileListViewCell(fc, true));
+        mergeFilesListView.setCellFactory(param -> new FileListViewCell(fc, false));
 
         addFilesButton.setOnAction(e -> { fc.addToImageFileList(imgListView); });
 
@@ -46,12 +50,14 @@ public class App extends Application
         mergePDFButton.setOnAction(e -> { fc.mergePDF(); });
 
         clearImagesButton.setOnAction(e -> { 
-            ArrayList<Path> imgFilePaths = fc.getImgFilePathsList();
-            imgFilePaths.clear(); 
+            fc.getImgFilePathsList().clear(); 
             imgListView.getItems().clear();
         });
 
-        clearPDFButton.setOnAction(e -> { fc.getFilesToMergeList().clear(); });
+        clearPDFButton.setOnAction(e -> { 
+            fc.getFilesToMergeList().clear(); 
+            mergeFilesListView.getItems().clear();
+        });
 
         HBox row = new HBox(5);
         row.getChildren().addAll(
@@ -64,7 +70,10 @@ public class App extends Application
         );
 
         HBox row2 = new HBox(5);
-        row2.getChildren().addAll(imgListView);
+        row2.getChildren().addAll(
+            imgListView,
+            mergeFilesListView
+        );
 
         layout.getChildren().addAll(row, row2);
 
