@@ -6,7 +6,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.ArrayList;
 
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -16,7 +15,8 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
 
-import javafx.scene.control.ListView;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -24,28 +24,23 @@ import javafx.stage.Stage;
 
 public class FileController
 {
-    private ArrayList<Path> imgFilePaths;
-    private ArrayList<String> filesToMerge;
+    private ObservableList<Path> imgFilePaths;
+    private ObservableList<Path> filesToMerge;
     private Stage primaryStage;
     private String targetDirectory;
-    private ListView<Path> imgListView;
-    private ListView<Path> mergeFilesListView;
+    private int mergeCount = 0;
 
-    public FileController(Stage primaryStage, 
-                          ListView<Path> imgListView,
-                          ListView<Path> mergeFilesListView) 
+    public FileController(Stage primaryStage) 
     {
-        imgFilePaths = new ArrayList<Path>();
-        filesToMerge = new ArrayList<String>();
+        imgFilePaths = FXCollections.observableArrayList();
+        filesToMerge = FXCollections.observableArrayList();
         targetDirectory = null;
         this.primaryStage = primaryStage;
-        this.imgListView = imgListView;
-        this.mergeFilesListView = mergeFilesListView;
     }
 
-    public ArrayList<Path> getImgFilePathsList() { return this.imgFilePaths; }
+    public ObservableList<Path> getImgFilePathsList() { return this.imgFilePaths; }
 
-    public ArrayList<String> getFilesToMergeList() { return this.filesToMerge; }
+    public ObservableList<Path> getFilesToMergeList() { return this.filesToMerge; }
 
     public void setTargetDirectory(DirectoryChooser dc)
     {
@@ -57,7 +52,7 @@ public class FileController
         System.out.println("User chose this file path: " + targetDirectory + "\n");
     }
 
-    public void addToImageFileList(ListView<Path> imgListView)
+    public void addToImageFileList()
     {
         System.out.println("\nOpening file explorer...");
 
@@ -91,7 +86,6 @@ public class FileController
             {
                 Path currPath = Paths.get(file.getAbsolutePath());
                 imgFilePaths.add(currPath);
-                imgListView.getItems().add(currPath);
             }
             selectedFiles = null;
         }
@@ -107,6 +101,7 @@ public class FileController
                                     ? this.targetDirectory
                                     : Paths.get(imgFilePaths.get(0).getParent().toString()).toString();
 
+            double start = System.currentTimeMillis()/1000.0;
             while (!imgFilePaths.isEmpty())
             {
                 Path path = imgFilePaths.get(0);
@@ -138,25 +133,26 @@ public class FileController
                 writer.close();
 
                 // Have a list of PDFs that the user can choose to merge
-                filesToMerge.add(outputName);
-                mergeFilesListView.getItems().add(Paths.get(outputName));
+                filesToMerge.add(Paths.get(outputName));
 
                 imgFilePaths.remove(0);
-                imgListView.getItems().remove(path);
             }
+            double end = System.currentTimeMillis()/1000.0;
+            System.out.println("Time elapsed: " + (end - start));
 
             System.out.println("\nAll images have been converted!");
         }
         catch (Exception e) {}
     }
 
-    public void mergePDF()
+    public void mergePDF(String fileName)
     {
-        try 
+        try
         {
             String targetDirectory = (this.targetDirectory != null)
-                                    ? this.targetDirectory
-                                    : Paths.get(filesToMerge.get(0)).getParent().toString();
+                                    ? this.targetDirectory + FileSystems.getDefault().getSeparator()
+                                    : filesToMerge.get(0).getParent().toString()
+                                      + FileSystems.getDefault().getSeparator();
 
             PDDocument src, dest = new PDDocument();
             PDFMergerUtility merger = new PDFMergerUtility();
@@ -166,22 +162,28 @@ public class FileController
             // Combine all PDFs into one
             while (!filesToMerge.isEmpty())
             {
-                String curr = filesToMerge.get(0);
+                Path curr = filesToMerge.get(0);
                 System.out.println("Merging PDF at " + curr + " ...");
 
-                src = PDDocument.load(new File(curr));
+                src = PDDocument.load(new File(curr.toAbsolutePath().toString()));
                 merger.appendDocument(dest, src);
 
                 filesToMerge.remove(0);
-                mergeFilesListView.getItems().remove(Paths.get(curr));
             }
-
+        
             // New file location + file name
-            String outputName = targetDirectory 
-                                + FileSystems.getDefault().getSeparator() 
-                                + "test.pdf"; 
+            String outputName = (fileName.equals(""))
+                                ? targetDirectory + "new_image" + "(" + mergeCount + ")" + ".pdf"
+                                : targetDirectory + fileName + ".pdf";
+            if(fileName.equals(""))
+            {
+                mergeCount++;
+            }
             dest.save(outputName);
             dest.close(); // free resources
+
+            // Add to list view
+            filesToMerge.add(Paths.get(outputName));
 
             System.out.println("\nNew PDF at " + outputName);
         } 

@@ -31,33 +31,31 @@ public class App extends Application
         Button clearImagesButton = new Button("Remove Image Files");
         Button clearPDFButton = new Button("Remove PDF Files");
 
-        ListView<Path> imgListView = new ListView<Path>();
-        imgListView.setPrefWidth(450);
-        ListView<Path> mergeFilesListView = new ListView<Path>();
-        mergeFilesListView.setPrefWidth(450);
+        FileController fc = new FileController(stage);
+        GetFileNameWindow gfnw = new GetFileNameWindow(fc);
 
-        FileController fc = new FileController(stage, imgListView, mergeFilesListView);
+        ListView<Path> imgListView = new ListView<Path>(fc.getImgFilePathsList());
+        imgListView.setPrefWidth(450);
+        ListView<Path> mergeFilesListView = new ListView<Path>(fc.getFilesToMergeList());
+        mergeFilesListView.setPrefWidth(450);
 
         imgListView.setCellFactory(param -> new FileListViewCell(fc, true));
         mergeFilesListView.setCellFactory(param -> new FileListViewCell(fc, false));
 
-        addFilesButton.setOnAction(e -> { fc.addToImageFileList(imgListView); });
+        addFilesButton.setOnAction(e -> fc.addToImageFileList());
 
-        chooseDirectoryButton.setOnAction(e -> { fc.setTargetDirectory(dc); });
+        chooseDirectoryButton.setOnAction(e -> fc.setTargetDirectory(dc));
 
-        convertButton.setOnAction(e -> { fc.convertImagesToPDF(); });
+        convertButton.setOnAction(e -> fc.convertImagesToPDF());
 
-        mergePDFButton.setOnAction(e -> { fc.mergePDF(); });
-
-        clearImagesButton.setOnAction(e -> { 
-            fc.getImgFilePathsList().clear(); 
-            imgListView.getItems().clear();
+        mergePDFButton.setOnAction(e -> {
+            gfnw.toFront();
+            gfnw.show();
         });
 
-        clearPDFButton.setOnAction(e -> { 
-            fc.getFilesToMergeList().clear(); 
-            mergeFilesListView.getItems().clear();
-        });
+        clearImagesButton.setOnAction(e -> fc.getImgFilePathsList().clear());
+
+        clearPDFButton.setOnAction(e -> fc.getFilesToMergeList().clear());
 
         HBox row = new HBox(5);
         row.getChildren().addAll(

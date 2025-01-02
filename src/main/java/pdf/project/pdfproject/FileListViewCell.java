@@ -3,6 +3,7 @@ package pdf.project.pdfproject;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -31,7 +32,7 @@ public class FileListViewCell extends ListCell<Path>
         this.fc = fc;
         this.isImageFile = isImageFile;
 
-        // Retrieve image in source files
+        // Retrieve the appropriate image in source files
         Path imgPath = isImageFile
                     ? Paths.get("src", "main", "resources", "img-icon.png").toAbsolutePath()
                     : Paths.get("src", "main", "resources", "pdf-icon.png").toAbsolutePath();
@@ -51,30 +52,31 @@ public class FileListViewCell extends ListCell<Path>
 
         removeButton.setOnAction(e -> {
             Path item = getItem();
-            getListView().getItems().remove(getItem());
             if(isImageFile)
             {
                 this.fc.getImgFilePathsList().remove(item);
             }
             else
             {
-                this.fc.getFilesToMergeList().remove(item.toAbsolutePath().toString());
+                this.fc.getFilesToMergeList().remove(item);
             }
         });
     }
 
     protected void updateItem(Path item, boolean empty)
     {
-        super.updateItem(item, empty);
+        Platform.runLater(() -> {
+            super.updateItem(item, empty);
 
-        if(item == null || empty)
-        {
-            setText(null);
-            setGraphic(null);
-            return;
-        }
+            if(item == null || empty)
+            {
+                setText(null);
+                setGraphic(null);
+                return;
+            }
 
-        fileName.setText(item.getFileName().toString());
-        setGraphic(hbox);
+            fileName.setText(item.getFileName().toString());
+            setGraphic(hbox);
+        });
     }
 }
