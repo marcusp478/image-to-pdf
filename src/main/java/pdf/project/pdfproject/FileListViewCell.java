@@ -3,7 +3,7 @@ package pdf.project.pdfproject;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import javafx.application.Platform;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -12,6 +12,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
 
 public class FileListViewCell extends ListCell<Path>
 {
@@ -21,16 +23,12 @@ public class FileListViewCell extends ListCell<Path>
     private Pane blankSpace = new Pane();
     private Button removeButton = new Button("X");
 
-    private FileController fc;
-
-    boolean isImageFile;
+    private ImageDisplayWindow imageDisplay;
+    private boolean displayIsOpen;
 
     public FileListViewCell(FileController fc, boolean isImageFile)
     {
         super();
-
-        this.fc = fc;
-        this.isImageFile = isImageFile;
 
         // Retrieve the appropriate image in source files
         Path imgPath = isImageFile
@@ -54,29 +52,69 @@ public class FileListViewCell extends ListCell<Path>
             Path item = getItem();
             if(isImageFile)
             {
-                this.fc.getImgFilePathsList().remove(item);
+                fc.getImgFilePathsList().remove(item);
             }
             else
             {
-                this.fc.getFilesToMergeList().remove(item);
+                fc.getFilesToMergeList().remove(item);
+            }
+        });
+
+        this.setOnMouseClicked(e -> {
+            // 1 window per image and blank cells can't spawn a window
+            if(getItem() != null && !displayIsOpen && isImageFile)
+            {
+                displayIsOpen = true;
+                imageDisplay = new ImageDisplayWindow(getItem());
+                imageDisplay.toFront();
+                imageDisplay.show();
             }
         });
     }
 
     protected void updateItem(Path item, boolean empty)
     {
-        Platform.runLater(() -> {
-            super.updateItem(item, empty);
+        // Must be called
+        super.updateItem(item, empty);
 
-            if(item == null || empty)
+        // Remove
+        if(item == null || empty)
+        {
+            setText(null);
+            setGraphic(null);
+            return;
+        }
+
+        // Otherwise, add
+        fileName.setText(item.getFileName().toString());
+        setGraphic(hbox);
+    }
+
+    // Displays the image of the list view cell the user clicks on
+    private class ImageDisplayWindow extends Stage
+    {
+        ImageDisplayWindow(Path imgPath)
+        {
+            Scene scene;
+            StackPane container  = new StackPane();
+            try
             {
-                setText(null);
-                setGraphic(null);
-                return;
-            }
+                ImageView imgContainer = new ImageView(
+                    new Image(imgPath.toUri().toURL().toString())
+                );
+                imgContainer.setFitWidth(400);
+                imgContainer.setFitHeight(400);
+                imgContainer.setPreserveRatio(true);
 
-            fileName.setText(item.getFileName().toString());
-            setGraphic(hbox);
-        });
+                container.getChildren().add(imgContainer);
+                scene = new Scene(container, 500, 500);
+                this.setScene(scene);
+            }
+            catch (Exception e) {}
+
+            this.setOnCloseRequest(e -> {
+                displayIsOpen = false;
+            });
+        }
     }
 }

@@ -9,13 +9,12 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class GetFileNameWindow extends Stage {
+public class AssignFileNameWindow extends Stage 
+{
     private static Scene scene;
-    private String fileName;
 
-    public GetFileNameWindow(FileController fc)
+    public AssignFileNameWindow(FileController fc)
     {
-        //160, 120
         VBox vbox = new VBox();
         this.setTitle("Enter File Name");
         TextField tf = new TextField();
@@ -25,8 +24,7 @@ public class GetFileNameWindow extends Stage {
         enter.setPrefWidth(50);
 
         enter.setOnAction(e -> {
-            fileName = tf.getText();
-            fc.mergePDF(fileName);
+            fc.mergePDF(tf.getText());
             this.close();
         });
 
@@ -42,11 +40,6 @@ public class GetFileNameWindow extends Stage {
         scene = new Scene(vbox, 280, 80);
         this.setResizable(false);
         this.setScene(scene);
-        this.setOnCloseRequest(Event::consume); // user must input name (or leave empty)
-    }
-
-    public String getFileName()
-    {
-        return fileName;
+        this.setOnCloseRequest(Event::consume); // User must a input name (or leave empty)
     }
 }

@@ -13,7 +13,6 @@ import javafx.stage.Stage;
 
 public class App extends Application 
 {
-
     private static Scene scene;
 
     @Override
@@ -32,7 +31,7 @@ public class App extends Application
         Button clearPDFButton = new Button("Remove PDF Files");
 
         FileController fc = new FileController(stage);
-        GetFileNameWindow gfnw = new GetFileNameWindow(fc);
+        AssignFileNameWindow afnw = new AssignFileNameWindow(fc);
 
         ListView<Path> imgListView = new ListView<Path>(fc.getImgFilePathsList());
         imgListView.setPrefWidth(450);
@@ -49,8 +48,8 @@ public class App extends Application
         convertButton.setOnAction(e -> fc.convertImagesToPDF());
 
         mergePDFButton.setOnAction(e -> {
-            gfnw.toFront();
-            gfnw.show();
+            afnw.toFront();
+            afnw.show();
         });
 
         clearImagesButton.setOnAction(e -> fc.getImgFilePathsList().clear());

@@ -26,8 +26,11 @@ public class FileController
 {
     private ObservableList<Path> imgFilePaths;
     private ObservableList<Path> filesToMerge;
+
     private Stage primaryStage;
+
     private String targetDirectory;
+    
     private int mergeCount = 0;
 
     public FileController(Stage primaryStage) 
@@ -101,7 +104,6 @@ public class FileController
                                     ? this.targetDirectory
                                     : Paths.get(imgFilePaths.get(0).getParent().toString()).toString();
 
-            double start = System.currentTimeMillis()/1000.0;
             while (!imgFilePaths.isEmpty())
             {
                 Path path = imgFilePaths.get(0);
@@ -137,8 +139,6 @@ public class FileController
 
                 imgFilePaths.remove(0);
             }
-            double end = System.currentTimeMillis()/1000.0;
-            System.out.println("Time elapsed: " + (end - start));
 
             System.out.println("\nAll images have been converted!");
         }
@@ -173,7 +173,7 @@ public class FileController
         
             // New file location + file name
             String outputName = (fileName.equals(""))
-                                ? targetDirectory + "new_image" + "(" + mergeCount + ")" + ".pdf"
+                                ? targetDirectory + "new_file" + "(" + mergeCount + ")" + ".pdf"
                                 : targetDirectory + fileName + ".pdf";
             if(fileName.equals(""))
             {
