@@ -96,7 +96,7 @@ public class FileListViewCell extends ListCell<Path>
         ImageDisplayWindow(Path imgPath)
         {
             Scene scene;
-            StackPane container  = new StackPane();
+            StackPane container = new StackPane();
             try
             {
                 ImageView imgContainer = new ImageView(
